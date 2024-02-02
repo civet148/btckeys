@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/civet148/btckeys"
+	"github.com/civet148/btckeys/types"
 	"github.com/civet148/log"
 	cli "github.com/urfave/cli/v2"
 	"os"
@@ -87,7 +87,7 @@ var genCmd = &cli.Command{
 		mnemonic := cctx.String(CMD_FLAG_NAME_MNEMONIC)
 		bitsize := cctx.Int(CMD_FLAG_NAME_BIT_SIZE)
 
-		km, err := btckeys.NewKeyManager(bitsize, password, mnemonic)
+		km, err := types.NewKeyManager(bitsize, password, mnemonic)
 		if err != nil {
 			return log.Errorf(err.Error())
 		}
@@ -106,7 +106,7 @@ var genCmd = &cli.Command{
 		log.Printf("%-18s %s", "BIP32 Root Key:", masterKey.B58Serialize())
 
 		log.Printf("\n%-18s %-34s %-42s %-52s", "Path(BIP44)", "Bitcoin Address", "Bech32 Address", "WIF(Wallet Import Format)")
-		key, err := km.GenerateKey(btckeys.PurposeBIP44, btckeys.CoinTypeBTC, 0, 0, uint32(index))
+		key, err := km.GenerateKey(types.PurposeBIP44, types.CoinTypeBTC, 0, 0, uint32(index))
 		if err != nil {
 			return log.Errorf(err.Error())
 		}

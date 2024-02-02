@@ -1,4 +1,4 @@
-package btckeys
+package types
 
 import (
 	"fmt"
@@ -56,7 +56,7 @@ type Key struct {
 
 func (k *Key) Encode(compress bool) (wif, address, segwitBech32, segwitNested string, err error) {
 	prvKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), k.bip32Key.Key)
-	return GenerateFromBytes(prvKey, compress)
+	return generateFromBytes(prvKey, compress)
 }
 
 func (k *Key) Bip32Key() *bip32.Key {
@@ -71,6 +71,16 @@ func (k *Key) PrivateKey() *btcec.PrivateKey {
 func (k *Key) PublicKey() *btcec.PublicKey {
 	_, pubKey := btcec.PrivKeyFromBytes(btcec.S256(), k.bip32Key.Key)
 	return pubKey
+}
+
+func (k *Key) PrivateKeyBytes() []byte {
+	privateKey, _ := btcec.PrivKeyFromBytes(btcec.S256(), k.bip32Key.Key)
+	return privateKey.Serialize()
+}
+
+func (k *Key) PublicKeyBytes() []byte {
+	_, pubKey := btcec.PrivKeyFromBytes(btcec.S256(), k.bip32Key.Key)
+	return pubKey.SerializeCompressed()
 }
 
 // https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki
@@ -277,15 +287,15 @@ func (km *KeyManager) GenerateKey(purpose, coinType, account, change, index uint
 	return &Key{path: path, bip32Key: key}, nil
 }
 
-func Generate(compress bool) (wif, address, segwitBech32, segwitNested string, err error) {
+func generateAddress(compress bool) (wif, address, segwitBech32, segwitNested string, err error) {
 	prvKey, err := btcec.NewPrivateKey(btcec.S256())
 	if err != nil {
 		return "", "", "", "", err
 	}
-	return GenerateFromBytes(prvKey, compress)
+	return generateFromBytes(prvKey, compress)
 }
 
-func GenerateFromBytes(prvKey *btcec.PrivateKey, compress bool) (wif, address, segwitBech32, segwitNested string, err error) {
+func generateFromBytes(prvKey *btcec.PrivateKey, compress bool) (wif, address, segwitBech32, segwitNested string, err error) {
 	// generate the wif(wallet import format) string
 	btcwif, err := btcutil.NewWIF(prvKey, &chaincfg.MainNetParams, compress)
 	if err != nil {
