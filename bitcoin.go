@@ -5,7 +5,7 @@ import (
 	"github.com/civet148/log"
 )
 
-func GenerateKey(passphrase, mnemonic string, bitSize, index int) (*types.BitcoinKey, error) {
+func GenBitcoinKey(passphrase, mnemonic string, bitSize, index int) (*types.BitcoinKey, error) {
 	km, err := types.NewKeyManager(bitSize, passphrase, mnemonic)
 	if err != nil {
 		return nil, log.Errorf(err.Error())

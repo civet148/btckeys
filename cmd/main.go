@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/civet148/btckeys/types"
+	"github.com/civet148/btckeys"
 	"github.com/civet148/log"
 	cli "github.com/urfave/cli/v2"
 	"os"
@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	Version     = "v0.1.0"
+	Version     = "v0.2.0"
 	ProgramName = "btckeys"
 )
 
 var (
-	BuildTime = "2024-02-01"
+	BuildTime = "2024-02-19"
 	GitCommit = ""
 )
 
@@ -87,43 +87,23 @@ var genCmd = &cli.Command{
 		mnemonic := cctx.String(CMD_FLAG_NAME_MNEMONIC)
 		bitsize := cctx.Int(CMD_FLAG_NAME_BIT_SIZE)
 
-		km, err := types.NewKeyManager(bitsize, password, mnemonic)
+		bk, err := btckeys.GenBitcoinKey(password, mnemonic, bitsize, index)
 		if err != nil {
-			return log.Errorf(err.Error())
+			return log.Error(err.Error())
 		}
-		masterKey, err := km.GetMasterKey()
-		if err != nil {
-			return log.Errorf(err.Error())
-		}
-		passphrase := km.GetPassphrase()
-		if passphrase == "" {
-			passphrase = "<none>"
-		}
-		log.Printf(strings.Repeat("-", 149))
-		log.Printf("%-18s %s", "BIP39 Mnemonic:", km.GetMnemonic())
-		log.Printf("%-18s %s", "BIP39 Passphrase:", passphrase)
-		log.Printf("%-18s %x", "BIP39 Seed:", km.GetSeed())
-		log.Printf("%-18s %s", "BIP32 Root Key:", masterKey.B58Serialize())
-
-		log.Printf("\n%-18s %-34s %-42s %-52s", "Path(BIP44)", "Bitcoin Address", "Bech32 Address", "WIF(Wallet Import Format)")
-		key, err := km.GenerateKey(types.PurposeBIP44, types.CoinTypeBTC, 0, 0, uint32(index))
-		if err != nil {
-			return log.Errorf(err.Error())
-		}
-
-		wif, address, segwitBech32, _, err := key.Encode(true)
-		if err != nil {
-			return log.Errorf(err.Error())
-		}
-		log.Printf("%-18s %-34s %s %s", key.GetPath(), address, segwitBech32, wif)
-
-		strPrivateKey := hex.EncodeToString(key.PrivateKey().Serialize())
-		strPublicKey := hex.EncodeToString(key.PublicKey().SerializeCompressed())
-		log.Printf("\n%-18s %-64s", "Path(BIP44)", "Private Key (HEX)")
-		log.Printf("%-18s %-64s", key.GetPath(), strPrivateKey)
-		log.Printf("\n%-18s %-64s", "Path(BIP44)", "Public Key (HEX)")
-		log.Printf("%-18s %-66s", key.GetPath(), strPublicKey)
-		log.Printf(strings.Repeat("-", 149))
+		fmt.Printf(strings.Repeat("-", 149))
+		fmt.Printf("\n%-18s %s\n", "BIP39 Mnemonic:", bk.GetMnemonic())
+		fmt.Printf("%-18s %s\n", "BIP39 Passphrase:", bk.GetPassphrase())
+		fmt.Printf("%-18s %x\n", "BIP39 Seed:", bk.GetSeed())
+		fmt.Printf("%-18s %s\n", "BIP32 Root Key:", bk.MasterKeyB58())
+		fmt.Printf("\n%-18s %-34s %-42s %-52s\n", "Path(BIP44)", "Bitcoin Address", "Bech32 Address", "WIF(Wallet Import Format)")
+		fmt.Printf("%-18s %-34s %s %s\n", bk.GetPath(), bk.Address(), bk.Bech32(), bk.WIF())
+		fmt.Printf("\n%-18s %-64s\n", "Path(BIP44)", "Private Key (HEX)")
+		fmt.Printf("%-18s %-64s\n", bk.GetPath(), hex.EncodeToString(bk.PrivateKeyBytes()))
+		fmt.Printf("\n%-18s %-64s\n", "Path(BIP44)", "Public Key (HEX)")
+		fmt.Printf("%-18s %-66s\n", bk.GetPath(), hex.EncodeToString(bk.PublicKeyBytes()))
+		fmt.Printf(strings.Repeat("-", 149))
+		fmt.Println()
 		return nil
 	},
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func TestGenerateKey(t *testing.T) {
-	bk, err := GenerateKey("", "", 128, 0)
+	bk, err := GenBitcoinKey("", "", 128, 0)
 	if err != nil {
 		log.Error(err.Error())
 		return
